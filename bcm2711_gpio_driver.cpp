@@ -34,6 +34,12 @@ BCM2711_GPIO_DRIVER::BCM2711_GPIO_DRIVER()
     GPCLR1 = virtual_memory_gpio_base_ptr + 11;
 }
 
+BCM2711_GPIO_DRIVER::~BCM2711_GPIO_DRIVER()
+{
+    // TODO: vapauta muisti munmap() kernel komento
+    // TODO :mahsollisesti palautu pinnit normi asentoihin?(ei varmaan tarvi)
+}
+
 void BCM2711_GPIO_DRIVER::setup_gpio_function(uint8_t pin_num, pin_function func)
 {
     // A pin’s functionality is defined via one of 8 alternative functions.
