@@ -81,6 +81,9 @@ public:
     // checkkaa onko oikeesti output pinni ja palauttaa false jo ei
     bool set_output_pin(uint8_t pin_num, bool value);
 
+    // TODO: tod näk riittää privatena?
+    pin_function get_gpio_function(uint8_t pin_num);
+
 private:
     // bcm2711-peripherals.pdf section 5.2 states:
     // "The GPIO register base address is 0x7e20_0000".

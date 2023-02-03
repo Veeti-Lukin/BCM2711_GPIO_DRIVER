@@ -6,6 +6,13 @@
 #include <cstring> // to be used with strerror()
 #include "bcm2711_gpio_driver.hh"
 
+// "*" are placeholders spots that will be replaced
+// Check BCM2711_DRIVER_EXCEPTION in bcm2711_gpio_driver.hh for more
+const std::string INVALID_PIN_NUM_ERROR = "Pin number: * is not a valid GPIO pin num."
+        " Valid pin numbers are 0-*";
+const std::string INVALID_PIN_FUNCTIONALITY = "GPIO pin: * functionality mode"
+        " is not set to be *";
+
 BCM2711_GPIO_DRIVER::BCM2711_GPIO_DRIVER()
 {
 
@@ -63,7 +70,50 @@ void BCM2711_GPIO_DRIVER::setup_gpio_function(uint8_t pin_num, pin_function func
 
 bool BCM2711_GPIO_DRIVER::set_output_pin(uint8_t pin_num, bool value)
 {
+    // Chek that *pun_num* is a valid GPIO pins numer
+    if (pin_num > GPIO_PIN_AMOUNT-1)
+    {
+        /*throw BCM2711_GPIO_DRIVER_EXCEPTION(
+                    std::string("Pin number is not a valid GPIO pin num. ") +
+                    std::string("Valid pin numbers are 0-") +
+                    std::to_string(GPIO_PIN_AMOUNT-1));
+        */
+        throw BCM2711_GPIO_DRIVER_EXCEPTION(INVALID_PIN_NUM_ERROR,
+                                {std::to_string(pin_num), std::to_string(GPIO_PIN_AMOUNT-1)});
+    }
 
+    //Chek that GPIO pins functionality is set to OUTPUT
+    if (get_gpio_function(pin_num) != OUTPUT)
+    {
+        throw BCM2711_GPIO_DRIVER_EXCEPTION(INVALID_PIN_FUNCTIONALITY,
+                                            {std::to_string(pin_num), "OUTPUT"});
+        /*throw BCM2711_GPIO_DRIVER_EXCEPTION(
+                    std::string("GPIO pin:") + std::to_string(pin_num) +
+                    std::string("functionality is not set to be OUTPUT"));*/
+    }
+
+    // pointer thst is used right controlling register to set/clear
+    // a GPIO pin, referenced by *pin_num*
+    volatile uint32_t* pins_control_register;
+
+    // Setting an Clearing output pin is seperated to differrnt registers in BCM2711
+    // Writing 1 in the poisition of the pin in the corresponding
+    // GPIO output set register is used to set a GPIO pin.
+    if (value == HIGH)
+    {
+        // set pin
+        pins_control_register = GPSET0 + pin_num/32;
+    }
+    // Writing 1 in the poisition of the pin in the corresponding
+    // GPIO output clear registers is used to clear a GPIO pin.
+    else // value == LOW
+    {
+        // clear pin
+        pins_control_register = GPCLR0 + pin_num/32;
+    }
+
+    *pins_control_register = 1 << pin_num;
+    return true;
 }
 
 void BCM2711_GPIO_DRIVER::gpio_init()
@@ -102,4 +152,22 @@ void BCM2711_GPIO_DRIVER::gpio_init()
     {
        throw BCM2711_GPIO_DRIVER_EXCEPTION(strerror(errno));
     }
+}
+
+pin_function BCM2711_GPIO_DRIVER::get_gpio_function(uint8_t pin_num)
+{
+    // Finding the correct register where functionality of pin by *pin_num* is controlled
+    // Since each register controls 10 pins and Integer division rounds down
+    // Correct register for pin 17 would be found like this:
+    // GPFSEL0 + 17/10(rounds down to 0) = GPFSEL0 + 0(pointer arithmetics) = GPFSEL0
+    volatile uint32_t* pins_gpio_function_selection_register = GPFSEL0 + pin_num/10;
+
+    uint32_t register_value_copy = *pins_gpio_function_selection_register;
+    // Finding the starting index where the the 3 bits
+    // controlling functionality of pin by *pin_num* are located.
+    uint8_t lsb_control_bit_index = (pin_num % 10) * 3;
+
+    //uint32_t mask = (0b111 << lsb_control_bit_index);
+
+    return pin_function(((1 << 3) - 1) & (register_value_copy >> lsb_control_bit_index));
 }
