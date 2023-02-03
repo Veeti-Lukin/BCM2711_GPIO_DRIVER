@@ -1,0 +1,19 @@
+Vaihda memorymapping pituus base osotteesta offset vikaan osotteesen + 4
+korjaa setupgpio functio kommentti aiheesta leftmost -> rightmost
+
+suljetaanko memfd? inititsä
+
+----TEE FUNKTIO KIRJOOITA bitti offsetissa 
+----TEE FUNKTIO KIRJOITA BITIT OFFSETISSA
+
+pwm0 blokki kontrolloi:
+	GPIO12 (channel 0
+	GPIO18 (channel1
+pwm1 blokki kontrolloi:
+	GPIO13 (cahnnel1
+	GPIO19 (
+
+ 
+
+18 pwm 0,0
+laita 0(1) channeli päälle

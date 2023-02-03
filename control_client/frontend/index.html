@@ -1,0 +1,182 @@
+<!doctype html>
+
+<html>
+<head>
+    <title>RC car controller</title>
+    <meta charset="UTF-8">
+</head>
+<style>
+    *
+    {
+        box-sizing: border-box;
+    }
+    body
+    {
+        margin: 0px;
+        padding: 0px;
+        font-family: monospace;
+    }
+    .row
+    {
+        display: inline-flex;
+        clear: both;
+    }
+    .columnLateral
+    {
+      float: left;
+      width: 15%;
+      min-width: 300px;
+    }
+    .columnCetral
+    {
+      float: left;
+      width: 70%;
+      min-width: 300px;
+    }
+    #joy2Div
+    {
+        width:200px;
+        height:200px;
+        margin:50px
+    }
+    #joystick
+    {
+        border: 1px solid #FF0000;
+    }
+    #joystick2
+    {
+        border: 1px solid #0000FF;
+    }
+</style>
+<script src="joy.js"></script>
+<body>
+    <h1>RC Car Controller</h1>
+    <button id="forward">Forward</button>
+    <button id="backward">Backward</button>
+    <button id="left">Turn Left</button>
+    <button id="right">Turn Right</button>
+    <button id="stop">Stop</button>
+
+    <!-- Example of FIXED or ABSOLUTE position -->
+    <div>
+        <div id="joy3Div" style="width:200px;height:200px;margin:50px;position:fixed;bottom:30px;left:500px;"></div>
+        <div style="position:fixed;bottom:125px;left:750px;">
+            Posizione X:<input id="joy3PosizioneX" type="text" /><br />
+            Posizione Y:<input id="joy3PosizioneY" type="text" /><br />
+            Direzione:<input id="joy3Direzione" type="text" /><br />
+            X :<input id="joy3X" type="text" /></br>
+            Y :<input id="joy3Y" type="text" />
+        </div>
+        <!-- Example of two JoyStick integrated in the page structure -->
+        <div class="row">
+            <div class="columnLateral">
+                <div id="joy1Div" style="width:200px;height:200px;margin:50px"></div>
+                Posizione X:<input id="joy1PosizioneX" type="text" /><br />
+                Posizione Y:<input id="joy1PosizioneY" type="text" /><br />
+                Direzione:<input id="joy1Direzione" type="text" /><br />
+                X :<input id="joy1X" type="text" /></br>
+                Y :<input id="joy1Y" type="text" />
+            </div>
+        </div>
+    </div>	
+ <script type="text/javascript">
+		
+// Create JoyStick object into the DIV 'joy1Div'
+//var Joy1 = new JoyStick('joy1Div');
+/*
+var joy1IinputPosX = document.getElementById("joy1PosizioneX");
+var joy1InputPosY = document.getElementById("joy1PosizioneY");
+var joy1Direzione = document.getElementById("joy1Direzione");
+var joy1X = document.getElementById("joy1X");
+var joy1Y = document.getElementById("joy1Y");
+/*
+setInterval(function(){ joy1IinputPosX.value=Joy1.GetPosX(); }, 50);
+setInterval(function(){ joy1InputPosY.value=Joy1.GetPosY(); }, 50);
+setInterval(function(){ joy1Direzione.value=Joy1.GetDir(); }, 50);
+setInterval(function(){ joy1X.value=Joy1.GetX(); }, 50);
+setInterval(function(){ joy1Y.value=Joy1.GetY(); }, 50);
+
+// Create JoyStick object into the DIV 'joy1Div'
+var Joy1 = new JoyStick('joy1Div', {}, function(stickData) {
+    joy1IinputPosX.value = stickData.xPosition;
+    joy1InputPosY.value = stickData.yPosition;
+    joy1Direzione.value = stickData.cardinalDirection;
+    joy1X.value = stickData.x;
+    joy1Y.value = stickData.y;
+});
+
+// Create JoyStick object into the DIV 'joy2Div'
+var joy2Param = { "title": "joystick2", "autoReturnToCenter": false };
+var Joy2 = new JoyStick('joy2Div', joy2Param);
+
+var joy2IinputPosX = document.getElementById("joy2PosizioneX");
+var joy2InputPosY = document.getElementById("joy2PosizioneY");
+var joy2Direzione = document.getElementById("joy2Direzione");
+var joy2X = document.getElementById("joy2X");
+var joy2Y = document.getElementById("joy2Y");
+
+setInterval(function(){ joy2IinputPosX.value=Joy2.GetPosX(); }, 50);
+setInterval(function(){ joy2InputPosY.value=Joy2.GetPosY(); }, 50);
+setInterval(function(){ joy2Direzione.value=Joy2.GetDir(); }, 50);
+setInterval(function(){ joy2X.value=Joy2.GetX(); }, 50);
+setInterval(function(){ joy2Y.value=Joy2.GetY(); }, 50);
+
+var joy3Param = { "title": "joystick3" };
+var Joy3 = new JoyStick('joy3Div', joy3Param);
+
+var joy3IinputPosX = document.getElementById("joy3PosizioneX");
+var joy3InputPosY = document.getElementById("joy3PosizioneY");
+var joy3Direzione = document.getElementById("joy3Direzione");
+var joy3X = document.getElementById("joy3X");
+var joy3Y = document.getElementById("joy3Y");
+
+setInterval(function(){ joy3IinputPosX.value=Joy3.GetPosX(); }, 50);
+setInterval(function(){ joy3InputPosY.value=Joy3.GetPosY(); }, 50);
+setInterval(function(){ joy3Direzione.value=Joy3.GetDir(); }, 50);
+setInterval(function(){ joy3X.value=Joy3.GetX(); }, 50);
+setInterval(function(){ joy3Y.value=Joy3.GetY(); }, 50);
+*/
+// Function to send a POST request to the server
+    function sendPostRequest(action) {
+        fetch('/api/control', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ action: action }), // Send the action as JSON data
+        })
+        .then(response => {
+            if (response.ok) {
+                console.log(`Successfully sent POST request for action: ${action}`);
+            } else {
+                console.error(`Failed to send POST request for action: ${action}`);
+            }
+        })
+        .catch(error => {
+            console.error(`Error sending POST request for action: ${action}`, error);
+        });
+    }
+
+    // Attach click event handlers to buttons
+    document.getElementById('forward').addEventListener('click', () => {
+        sendPostRequest('forward');
+    });
+
+    document.getElementById('backward').addEventListener('click', () => {
+        sendPostRequest('backward');
+    });
+
+    document.getElementById('left').addEventListener('click', () => {
+        sendPostRequest('left');
+    });
+
+    document.getElementById('right').addEventListener('click', () => {
+        sendPostRequest('right');
+    });
+
+    document.getElementById('stop').addEventListener('click', () => {
+        sendPostRequest('stop');
+    });
+		</script>
+</body>
+</html>
