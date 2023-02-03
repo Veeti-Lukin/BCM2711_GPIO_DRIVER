@@ -29,7 +29,36 @@ BCM2711_GPIO_DRIVER::BCM2711_GPIO_DRIVER()
 
 void BCM2711_GPIO_DRIVER::setup_gpio_function(uint8_t pin_num, pin_function func)
 {
+    // A pin’s functionality is defined via one of 8 alternative functions.
+    // Encoding each function requires 3 bits, 000 - 111.
+    // so 32 bit functionality register can control 10 pins with 2 bits left over.
+    // Therefore to control functionality of all pins there are total 6 functionality registers.
+    // These registers are pointed to by <GPFSEL0> - <GPFSEL1>
 
+    // Finding the correct register where functionality of pin by *pin_num* is controlled
+    // Since each register controls 10 pins and Integer division rounds down
+    // Correct register for pin 17 would be found like this:
+    // GPFSEL0 + 17/10(rounds down to 0) = GPFSEL0 + 0(pointer arithmetics) = GPFSEL0
+    volatile uint32_t* pins_gpio_function_selection_register = GPFSEL0 + pin_num/10;
+
+    // Finding the starting index where the the 3 bits
+    // controlling functionality of pin by *pin_num* are located.
+    // By exctracting the least signifigant digit of the *pin_num*
+    // and multiplaying it with amount of bits per pin.
+    uint8_t lsb_control_bit_index = (pin_num % 10) * 3;
+    // Forming a bitmask, that defines which bits in the register are going to get affected
+    // Bits set 1 to are the ones that will be affected.
+    // Shifting 3 ones so that the leftmost 1 will be at the <lsb_control_bit_index>
+    uint32_t mask = (0b111 << lsb_control_bit_index);
+    /*uint32_t mask = (1 << lsb_control_bit_index) |
+            (1 << (lsb_control_bit_index+1)) | (1 << (lsb_control_bit_index+2));
+    */
+
+    // First masked bits will be ANDed with invesred mask
+    // Therefore masked bits will be set to 0 and other bits wont be affected
+    // Then the bits of the func (3 encoding bits) will be ORed to the masked spot
+    *pins_gpio_function_selection_register =
+            (*pins_gpio_function_selection_register & ~(mask)) | (func << lsb_control_bit_index);
 }
 
 bool BCM2711_GPIO_DRIVER::set_output_pin(uint8_t pin_num, bool value)
