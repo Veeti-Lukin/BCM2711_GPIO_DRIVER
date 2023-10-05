@@ -348,8 +348,7 @@ void BCM2711_GPIO_DRIVER::memMampRegisters()
     virtual_memory_pwm0_base_ptr = (uint32_t*)mmap(NULL, 4096, (PROT_READ | PROT_WRITE),
                                                    MAP_SHARED, memfd, K_PWM0_BASE_ADDRESS);
     // somewhy this fails
-    //virtual_memory_pwm1_base_ptr = (uint32_t*)mmap(NULL, 4096, (PROT_READ | PROT_WRITE),
-                                                   //MAP_SHARED, memfd, K_PWM1_BASE_ADDRESS);
+    virtual_memory_pwm1_base_ptr = virtual_memory_pwm0_base_ptr+K_PWM1_BASE_ADDRESS-K_PWM0_BASE_ADDRESS; // markus was here 
 
     // check if memorymapping failed for PWM controllers
     if (virtual_memory_pwm0_base_ptr == MAP_FAILED
