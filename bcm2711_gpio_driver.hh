@@ -169,7 +169,6 @@ private:
     static const uint32_t K_DEFAULT_CLOCK_FREQ = 19200000;
     static const uint32_t K_CLOCK_MANAGER_PASSWORD = 0x5A << 24;
 
-
     // Handles the memorymapping the physical address range
     // where control registers are located to virtual address space.
     // this method will be called by the classes constructor

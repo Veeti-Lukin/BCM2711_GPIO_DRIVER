@@ -53,9 +53,9 @@ BCM2711_GPIO_DRIVER::~BCM2711_GPIO_DRIVER()
      munmap((void*)virtual_memory_pwm0_base_ptr, 4096);
      munmap((void*)virtual_memory_pwm1_base_ptr, 4096);
      munmap((void*)virtual_memory_clock_manager_base_address, 4096);
-     if (memfd >= 0) {
+     /*if (memfd >= 0) {
          close(memfd);
-     }
+     }*/
 }
 
 void BCM2711_GPIO_DRIVER::setPinGpioFunction(uint8_t pin_num, PinFunction func)
