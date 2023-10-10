@@ -21,7 +21,7 @@ void L289N_MotorController::setSpeed(uint8_t speed_percentage)
     if (is_stopped_) {
         // get rid of static friction
         gpio_driver_.configPwmPin(K_PWM_FREQUENCY, 100, speed_pin_);
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
         is_stopped_ = false;
     }
 

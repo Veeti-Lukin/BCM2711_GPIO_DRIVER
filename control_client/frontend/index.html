@@ -83,7 +83,7 @@
 		
 // Create JoyStick object into the DIV 'joy1Div'
 //var Joy1 = new JoyStick('joy1Div');
-
+/*
 var joy1IinputPosX = document.getElementById("joy1PosizioneX");
 var joy1InputPosY = document.getElementById("joy1PosizioneY");
 var joy1Direzione = document.getElementById("joy1Direzione");
@@ -95,7 +95,7 @@ setInterval(function(){ joy1InputPosY.value=Joy1.GetPosY(); }, 50);
 setInterval(function(){ joy1Direzione.value=Joy1.GetDir(); }, 50);
 setInterval(function(){ joy1X.value=Joy1.GetX(); }, 50);
 setInterval(function(){ joy1Y.value=Joy1.GetY(); }, 50);
-*/
+
 // Create JoyStick object into the DIV 'joy1Div'
 var Joy1 = new JoyStick('joy1Div', {}, function(stickData) {
     joy1IinputPosX.value = stickData.xPosition;
@@ -135,6 +135,48 @@ setInterval(function(){ joy3InputPosY.value=Joy3.GetPosY(); }, 50);
 setInterval(function(){ joy3Direzione.value=Joy3.GetDir(); }, 50);
 setInterval(function(){ joy3X.value=Joy3.GetX(); }, 50);
 setInterval(function(){ joy3Y.value=Joy3.GetY(); }, 50);
+*/
+// Function to send a POST request to the server
+    function sendPostRequest(action) {
+        fetch('/api/control', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ action: action }), // Send the action as JSON data
+        })
+        .then(response => {
+            if (response.ok) {
+                console.log(`Successfully sent POST request for action: ${action}`);
+            } else {
+                console.error(`Failed to send POST request for action: ${action}`);
+            }
+        })
+        .catch(error => {
+            console.error(`Error sending POST request for action: ${action}`, error);
+        });
+    }
+
+    // Attach click event handlers to buttons
+    document.getElementById('forward').addEventListener('click', () => {
+        sendPostRequest('forward');
+    });
+
+    document.getElementById('backward').addEventListener('click', () => {
+        sendPostRequest('backward');
+    });
+
+    document.getElementById('left').addEventListener('click', () => {
+        sendPostRequest('left');
+    });
+
+    document.getElementById('right').addEventListener('click', () => {
+        sendPostRequest('right');
+    });
+
+    document.getElementById('stop').addEventListener('click', () => {
+        sendPostRequest('stop');
+    });
 		</script>
 </body>
 </html>
