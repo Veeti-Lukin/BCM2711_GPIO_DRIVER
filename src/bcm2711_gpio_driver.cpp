@@ -4,7 +4,7 @@
 #include <sys/mman.h> // for mmap() and global varaibles helping in that
 #include <errno.h>  // for errno errors
 #include <cstring> // to be used with strerror()
-#include "bcm2711_gpio_driver.hh"
+#include "BCM2711_GPIO_Driver/bcm2711_gpio_driver.h"
 
 // "*" are placeholders spots that will be replaced
 // Check BCM2711_DRIVER_EXCEPTION in bcm2711_gpio_driver.hh for more
