@@ -115,22 +115,22 @@ bool BCM2711_GPIO_DRIVER::setOuputPin(uint8_t pin_num, bool value)
     // Chek that *pun_num* is a valid GPIO pins numer
     if (pin_num > K_GPIO_PIN_AMOUNT-1)
     {
-        /*throw BCM2711_GPIO_DRIVER_EXCEPTION(
+        /*throw GPIO_DRIVER_EXCEPTION(
                     std::string("Pin number is not a valid GPIO pin num. ") +
                     std::string("Valid pin numbers are 0-") +
                     std::to_string(GPIO_PIN_AMOUNT-1));
         */
-        throw BCM2711_GPIO_DRIVER_EXCEPTION(INVALID_PIN_NUM_ERROR,
-                                {std::to_string(pin_num), std::to_string(K_GPIO_PIN_AMOUNT-1)});
+        throw GPIO_DRIVER_EXCEPTION(INVALID_PIN_NUM_ERROR,
+                                    {std::to_string(pin_num), std::to_string(K_GPIO_PIN_AMOUNT-1)});
     }
 
     //Chek that GPIO pins functionality is set to OUTPUT
     //TODO EI TAIDA TOIMIA
     if (getGpioFunction(pin_num) != OUTPUT)
     {
-        throw BCM2711_GPIO_DRIVER_EXCEPTION(INVALID_PIN_FUNCTIONALITY,
-                                            {std::to_string(pin_num), "OUTPUT"});
-        /*throw BCM2711_GPIO_DRIVER_EXCEPTION(
+        throw GPIO_DRIVER_EXCEPTION(INVALID_PIN_FUNCTIONALITY,
+                                    {std::to_string(pin_num), "OUTPUT"});
+        /*throw GPIO_DRIVER_EXCEPTION(
                     std::string("GPIO pin:") + std::to_string(pin_num) +
                     std::string("functionality is not set to be OUTPUT"));*/
     }
@@ -245,7 +245,7 @@ void BCM2711_GPIO_DRIVER::configPwmPin(uint32_t freq, uint8_t duty_cycle_precent
        }
        else
        {
-           throw BCM2711_GPIO_DRIVER_EXCEPTION("Invalid GPIO pin number for PWM");
+           throw GPIO_DRIVER_EXCEPTION("Invalid GPIO pin number for PWM");
        }
     // Stop PWM clock
     *CM_GP0CTL = K_CLOCK_MANAGER_PASSWORD | 0x01;
@@ -293,7 +293,7 @@ void BCM2711_GPIO_DRIVER::enablePwmPin(uint8_t pin_num, bool enable)
        }
        else
        {
-           throw BCM2711_GPIO_DRIVER_EXCEPTION("Invalid GPIO pin number for PWM");
+           throw GPIO_DRIVER_EXCEPTION("Invalid GPIO pin number for PWM");
        }
 
        if(enable)
@@ -313,7 +313,7 @@ void BCM2711_GPIO_DRIVER::memMampRegisters()
     //          https://man7.org/linux/man-pages/man2/getuid.2.html)
     if (geteuid() != 0)
     {
-        throw BCM2711_GPIO_DRIVER_EXCEPTION("Driver needs to be run with ROOT privilages");
+        throw GPIO_DRIVER_EXCEPTION("Driver needs to be run with ROOT privilages");
     }
 
     // Open the master /dev/mem devicefile for obtaining the handle to physical memory
@@ -326,7 +326,7 @@ void BCM2711_GPIO_DRIVER::memMampRegisters()
     if (memfd < 0)
     {
         // strerror() turns the errno integer into a human readable error message.
-        throw BCM2711_GPIO_DRIVER_EXCEPTION(strerror(errno));
+        throw GPIO_DRIVER_EXCEPTION(strerror(errno));
     }
 
     // Memory map the physical address range where control registers are located
@@ -340,8 +340,8 @@ void BCM2711_GPIO_DRIVER::memMampRegisters()
     // check if memorymapping failed
     if (virtual_memory_gpio_base_ptr == MAP_FAILED)
     {
-       throw BCM2711_GPIO_DRIVER_EXCEPTION(MEMORY_MAPPING_ERROR,
-                                           {"GPIO REGISTERS", strerror(errno)});
+       throw GPIO_DRIVER_EXCEPTION(MEMORY_MAPPING_ERROR,
+                                   {"GPIO REGISTERS", strerror(errno)});
     }
 
     // Memorymap both PMW control registers addres ranges to vritual address space
@@ -354,8 +354,8 @@ void BCM2711_GPIO_DRIVER::memMampRegisters()
     if (virtual_memory_pwm0_base_ptr == MAP_FAILED
             || virtual_memory_pwm1_base_ptr == MAP_FAILED)
     {
-       throw BCM2711_GPIO_DRIVER_EXCEPTION(MEMORY_MAPPING_ERROR,
-                                           {"PWM REGISTERS", strerror(errno)});
+       throw GPIO_DRIVER_EXCEPTION(MEMORY_MAPPING_ERROR,
+                                   {"PWM REGISTERS", strerror(errno)});
     }
 
     virtual_memory_clock_manager_base_address =
@@ -365,7 +365,7 @@ void BCM2711_GPIO_DRIVER::memMampRegisters()
     if (virtual_memory_clock_manager_base_address == MAP_FAILED
             || virtual_memory_pwm1_base_ptr == MAP_FAILED)
     {
-       throw BCM2711_GPIO_DRIVER_EXCEPTION(MEMORY_MAPPING_ERROR,
-                                           {"CLOCK MANAGER REGISTERS", strerror(errno)});
+       throw GPIO_DRIVER_EXCEPTION(MEMORY_MAPPING_ERROR,
+                                   {"CLOCK MANAGER REGISTERS", strerror(errno)});
     }
 }

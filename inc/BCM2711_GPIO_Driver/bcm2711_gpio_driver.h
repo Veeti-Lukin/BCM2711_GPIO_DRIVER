@@ -1,83 +1,12 @@
-/// C++ class library tha allows use of GPIO pins in raspberry 4b
+/// C++ class library that allows use of GPIO pins in raspberry 4b
 /// all operations on BCM2711 peripherals are accomplished by
 /// manipulating the registers associated for that type of peripheral.
 
 #ifndef BCM_2711_DRIVER_HH
 #define BCM_2711_DRIVER_HH
 
-#include<cstdint>
-#include<string>
-#include<exception>
-#include<vector>
-
-// This means pin HIGH, true, 3.3 volts on a pin.
-// Can be given as argument to <set_output_pin()>
-const uint8_t HIGH = 1;
-// This means pin LOW, false, 0 volts on a pin.
-// Can be given as argument to <set_output_pin()>
-const uint8_t LOW = 0;
-
-// ALTERNATIVE PIN FUNCTIONS PER PIN CAN BE FOUND IN BCM2711_peripherals.pdf SECTION 5.3
-// These enum constant can be used to define the operation of the GPIO pin.
-// Each of the 58 GPIO pins has at least two alternative functions.
-// Encoding each function requires 3 bits, 000 - 111.
-// One of these constants can be given as arg to <setup_gpio_function()>
-enum PinFunction
-{
-    INPUT = 0b000,
-    OUTPUT = 0b001,
-    ALT_FUNC0 = 0b100,
-    ALT_FUNC1 = 0b101,
-    ALT_FUNC2 = 0b110,
-    ALT_FUNC3 = 0b111,
-    ALT_FUNC4 = 0b011,
-    ALT_FUNC5 = 0b010
-};
-
-struct PwmPin {
-    uint8_t pin_num;
-    PinFunction pwm_func;
-};
-
-
-const PwmPin K_PWM_PIN12{12, ALT_FUNC0};
-const PwmPin K_PWM_PIN13{13, ALT_FUNC0};
-const PwmPin K_PWM_PIN18{18, ALT_FUNC5};
-const PwmPin K_PWM_PIN19{12, ALT_FUNC5};
-
-// Exception class. Instances of this class will be thrown in case of errors
-// or faulty use of the driver class
-class BCM2711_GPIO_DRIVER_EXCEPTION : public std::exception
-{
-public:
-    // Default constructor where  error message is given as parameter
-    BCM2711_GPIO_DRIVER_EXCEPTION(const std::string msg) :
-        message_("Error: "+msg){}
-    // Constructor where error message can have placeholders that are marked with "*"
-    // values from *values_to_format* will be formatted in order to these spots
-    BCM2711_GPIO_DRIVER_EXCEPTION(const std::string msg,
-                                  std::vector<std::string> values_to_format) :
-        message_("Error: " + msg), values_to_format_(values_to_format)
-    {
-        // format the values to to placeholder spots
-        for (std::string& value : values_to_format)
-        {
-            message_.replace(message_.find("*"), 1, value);
-
-        }
-    }
-
-    virtual const char* what() const noexcept override
-        {
-            return message_.c_str();
-        }
-
-private:
-    std::string message_;
-    std::vector<std::string> values_to_format_;
-};
-
-
+#include <cstdint>
+#include "GpioDriverException.h"
 
 
 class BCM2711_GPIO_DRIVER

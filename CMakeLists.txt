@@ -4,6 +4,9 @@ project(BCM2711_GPIO_Driver CXX)
 add_library(BCM2711_GPIO_Driver
         src/bcm2711_gpio_driver.cpp
         inc/BCM2711_GPIO_Driver/bcm2711_gpio_driver.h
+
+        inc/BCM2711_GPIO_Driver/GpioDriverException.h
+        inc/BCM2711_GPIO_Driver/gpio_types.h
 )
 
 target_include_directories(BCM2711_GPIO_Driver PUBLIC inc)
