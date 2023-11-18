@@ -17,7 +17,7 @@ const uint8_t HIGH = 1;
 // Can be given as argument to <set_output_pin()>
 const uint8_t LOW = 0;
 
-// ALTERNATIVE PIN FUNCTIONS PER PIN CAN BE FOUND IN IN BCM2711_peripherals.pdf SECTION 5.3
+// ALTERNATIVE PIN FUNCTIONS PER PIN CAN BE FOUND IN BCM2711_peripherals.pdf SECTION 5.3
 // These enum constant can be used to define the operation of the GPIO pin.
 // Each of the 58 GPIO pins has at least two alternative functions.
 // Encoding each function requires 3 bits, 000 - 111.
@@ -102,7 +102,7 @@ public:
 private:
     // bcm2711-peripherals.pdf section 5.2 states:
     // "The GPIO register base address is 0x7e20_0000".
-    // However addresses starting at 0x7e00_0000 are in VPU address space.
+    // However, addresses starting at 0x7e00_0000 are in VPU address space.
     // If bcm2711 is running in "low peripheral mode" (default on rpi4)
     // this address range is re-mapped to start at 0xFE00_0000
     // in arm physical address space.
