@@ -16,7 +16,7 @@ const uint8_t LOW = 0;
 // Each of the 58 GPIO pins has at least two alternative functions.
 // Encoding each function requires 3 bits, 000 - 111.
 // One of these constants can be given as arg to <setup_gpio_function()>
-enum PinFunction
+enum class PinFunction
 {
     INPUT = 0b000,
     OUTPUT = 0b001,
@@ -34,9 +34,9 @@ struct PwmPin {
 };
 
 
-const PwmPin K_PWM_PIN12{12, ALT_FUNC0};
-const PwmPin K_PWM_PIN13{13, ALT_FUNC0};
-const PwmPin K_PWM_PIN18{18, ALT_FUNC5};
-const PwmPin K_PWM_PIN19{12, ALT_FUNC5};
+const PwmPin K_PWM_PIN12{12, PinFunction::ALT_FUNC0};
+const PwmPin K_PWM_PIN13{13, PinFunction::ALT_FUNC0};
+const PwmPin K_PWM_PIN18{18, PinFunction::ALT_FUNC5};
+const PwmPin K_PWM_PIN19{12, PinFunction::ALT_FUNC5};
 
 #endif //BCM2711_GPIO_DRIVER_GPIO_TYPES_H
