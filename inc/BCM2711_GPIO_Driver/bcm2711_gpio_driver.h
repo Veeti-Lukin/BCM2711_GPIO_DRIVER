@@ -9,6 +9,14 @@
 #include "GpioDriverException.h"
 #include "gpio_types.h"
 
+// Uncommenting this line disables all the platform access of the driver.
+// The driver can still be used but it just (roughly) emulates the behaviour of how the
+// driver would work in the real case. However, i.e. pin functions will always be set
+// to 0 when the driver is initialized unlike on the real platform case.
+// Can be used to develop code depended on this driver in dev machine instead than on
+// the target
+//#define EMULATE_GPIO_DRIVER
+
 // bcm2711-peripherals.pdf section 5.2 states:
 // "The GPIO register base address is 0x7e20_0000".
 // However, addresses starting at 0x7e00_0000 are in VPU address space.

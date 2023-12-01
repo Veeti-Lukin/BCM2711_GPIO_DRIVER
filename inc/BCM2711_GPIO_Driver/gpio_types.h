@@ -7,7 +7,7 @@
 // This means pin HIGH, true, 3.3 volts on a pin.
 // Can be given as argument to <set_output_pin()>
 const uint8_t HIGH = 1;
-// This means pin LOW, false, 0 volts on a pin.
+// This means pin LOW, false, 0 volts on aK pin.
 // Can be given as argument to <set_output_pin()>
 const uint8_t LOW = 0;
 
@@ -16,8 +16,7 @@ const uint8_t LOW = 0;
 // Each of the 58 GPIO pins has at least two alternative functions.
 // Encoding each function requires 3 bits, 000 - 111.
 // One of these constants can be given as arg to <setup_gpio_function()>
-enum class PinFunction
-{
+enum class PinFunction {
     INPUT = 0b000,
     OUTPUT = 0b001,
     ALT_FUNC0 = 0b100,

@@ -1,10 +1,13 @@
-#include <system_error>
-#include <unistd.h>
-#include <fcntl.h>  // for open()
-#include <sys/mman.h> // for mmap() and global varaibles helping in that
-#include <errno.h>  // for errno errors
-#include <cstring> // to be used with strerror()
 #include "BCM2711_GPIO_Driver/bcm2711_gpio_driver.h"
+
+#include <unistd.h> // for sleep()
+#ifndef EMULATE_GPIO_DRIVER
+    #include <system_error>
+    #include <fcntl.h>  // for open()
+    #include <sys/mman.h> // for mmap() and global varaibles helping in that
+    #include <errno.h>  // for errno errors
+    #include <cstring> // to be used with strerror()
+#endif
 
 // "*" are placeholders spots that will be replaced
 // Check BCM2711_DRIVER_EXCEPTION in bcm2711_gpio_driver.hh for more
@@ -40,6 +43,7 @@ volatile uint32_t* BCM2711_GPIO_DRIVER::CM_GP0DIV = nullptr;
 
 
 void BCM2711_GPIO_DRIVER::initialize() {
+    #ifndef EMULATE_GPIO_DRIVER
     memMampRegisters();
 
     // REGISTER OFFSETS ARE FOUND IN BCM2711_peripherals.pdf SECTION 5.2
@@ -67,6 +71,31 @@ void BCM2711_GPIO_DRIVER::initialize() {
 
     CM_GP0CTL = virtual_memory_clock_manager_base_address + 28;
     CM_GP0DIV = virtual_memory_clock_manager_base_address + 29;
+    #endif
+
+    #ifdef EMULATE_GPIO_DRIVER
+    GPFSEL0 = new uint32_t;
+    GPFSEL1 = new uint32_t;
+    GPFSEL2 = new uint32_t;
+    GPFSEL3 = new uint32_t;
+    GPFSEL4 = new uint32_t;
+    GPFSEL5 = new uint32_t;
+    GPSET0 = new uint32_t;
+    GPSET1 = new uint32_t;
+    GPCLR0 = new uint32_t;
+    GPCLR1 = new uint32_t;
+
+    PWM0CTL = new uint32_t;
+    PWM0RNG1 = new uint32_t;
+    PWM0DAT1 = new uint32_t;
+
+    PWM1CTL = new uint32_t;
+    PWM1RNG1 = new uint32_t;
+    PWM1DAT1 = new uint32_t;
+
+    CM_GP0CTL = new uint32_t;
+    CM_GP0DIV = new uint32_t;
+    #endif
 }
 
 void BCM2711_GPIO_DRIVER::terminate() {
@@ -80,6 +109,29 @@ void BCM2711_GPIO_DRIVER::terminate() {
         close(memfd);
     }*
      */
+    #ifdef EMULATE_GPIO_DRIVER
+        delete GPFSEL0;
+        delete GPFSEL1;
+        delete GPFSEL2;
+        delete GPFSEL3;
+        delete GPFSEL4;
+        delete GPFSEL5;
+        delete GPSET0;
+        delete GPSET1;
+        delete GPCLR0;
+        delete GPCLR1;
+
+        delete PWM0CTL;
+        delete PWM0RNG1;
+        delete PWM0DAT1;
+
+        delete PWM1CTL;
+        delete PWM1RNG1;
+        delete PWM1DAT1;
+
+        delete CM_GP0CTL;
+        delete CM_GP0DIV;
+    #endif
 }
 
 void BCM2711_GPIO_DRIVER::setPinGpioFunction(uint8_t pin_num, PinFunction func) {
@@ -261,9 +313,12 @@ void BCM2711_GPIO_DRIVER::configPwmPin(uint32_t freq, uint8_t duty_cycle_precent
     }
     // Stop PWM clock
     *CM_GP0CTL = K_CLOCK_MANAGER_PASSWORD | 0x01;
+
+    #ifndef EMULATE_GPIO_DRIVER
     // Wait until clock is not busy
     while ((*CM_GP0CTL & 0x80) != 0)
         usleep(1);
+    #endif
 
     // Divisor = Clock frequency / Desired PWM frequency
     // Assuming clock frequency is 19.2 MHz (default oscillator)
@@ -310,6 +365,7 @@ void BCM2711_GPIO_DRIVER::enablePwmPin(uint8_t pin_num, bool enable) {
 }
 
 void BCM2711_GPIO_DRIVER::memMampRegisters() {
+    #ifndef EMULATE_GPIO_DRIVER
     // check if progrm is run as root/sudo
     // (linux-kernel-call geteuid:
     //          https://man7.org/linux/man-pages/man2/getuid.2.html)
@@ -366,4 +422,5 @@ void BCM2711_GPIO_DRIVER::memMampRegisters() {
         throw GPIO_DRIVER_EXCEPTION(MEMORY_MAPPING_ERROR,
                                     {"CLOCK MANAGER REGISTERS", strerror(errno)});
     }
+    #endif
 }
