@@ -34,8 +34,7 @@ static const uint8_t K_GPIO_PIN_AMOUNT = 58;
 // Each of these channels have its own controlling registers.
 //0x7e20c000
 static const uint32_t K_PWM0_BASE_ADDRESS = 0xFE20c000;
-//0x7e20c800.
-static const uint32_t K_PWM1_BASE_ADDRESS =  0xFE20c800;
+
 // 0x7e101000
 static const uint32_t  K_CLOCK_MANAGER_BASE_ADDRESS = 0xFE101000;
 
@@ -87,22 +86,17 @@ private:
     static volatile uint32_t* GPCLR0;
     static volatile uint32_t* GPCLR1;
 
-    // These pointers point to start of address range where pwm channel control
+    // This pointer points to start of address range where pwm channel control
     // registers are memory mapped in the virtual address space.
     static volatile uint32_t* virtual_memory_pwm0_base_ptr;
-    static volatile uint32_t* virtual_memory_pwm1_base_ptr;
 
     // CONTROL REGISTER POINTERS FOR PWM0
     // Each register is 32 bits long
     static  volatile uint32_t* PWM0CTL;
     static volatile uint32_t* PWM0RNG1;
     static volatile uint32_t* PWM0DAT1;
-
-    // CONTROL REGISTER POINTERS FOR PWM1
-    // Each register is 32 bits long
-    static volatile uint32_t* PWM1CTL;
-    static volatile uint32_t* PWM1RNG1;
-    static volatile uint32_t* PWM1DAT1;
+    static volatile uint32_t* PWM0RNG2;
+    static volatile uint32_t* PWM0DAT2;
 
     // This pointer points to start of address range where
     // Clockmanager registers are memory mapped in the virtual address space.

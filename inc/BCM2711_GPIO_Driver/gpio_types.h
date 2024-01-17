@@ -36,6 +36,6 @@ struct PwmPin {
 const PwmPin K_PWM_PIN12{12, PinFunction::ALT_FUNC0};
 const PwmPin K_PWM_PIN13{13, PinFunction::ALT_FUNC0};
 const PwmPin K_PWM_PIN18{18, PinFunction::ALT_FUNC5};
-const PwmPin K_PWM_PIN19{12, PinFunction::ALT_FUNC5};
+const PwmPin K_PWM_PIN19{19, PinFunction::ALT_FUNC5};
 
 #endif //BCM2711_GPIO_DRIVER_GPIO_TYPES_H

@@ -30,13 +30,11 @@ volatile uint32_t* BCM2711_GPIO_DRIVER::GPSET1 = nullptr;
 volatile uint32_t* BCM2711_GPIO_DRIVER::GPCLR0 = nullptr;
 volatile uint32_t* BCM2711_GPIO_DRIVER::GPCLR1 = nullptr;
 volatile uint32_t* BCM2711_GPIO_DRIVER::virtual_memory_pwm0_base_ptr = nullptr;
-volatile uint32_t* BCM2711_GPIO_DRIVER::virtual_memory_pwm1_base_ptr = nullptr;
 volatile uint32_t* BCM2711_GPIO_DRIVER::PWM0CTL = nullptr;
 volatile uint32_t* BCM2711_GPIO_DRIVER::PWM0RNG1 = nullptr;
 volatile uint32_t* BCM2711_GPIO_DRIVER::PWM0DAT1 = nullptr;
-volatile uint32_t* BCM2711_GPIO_DRIVER::PWM1CTL = nullptr;
-volatile uint32_t* BCM2711_GPIO_DRIVER::PWM1RNG1 = nullptr;
-volatile uint32_t* BCM2711_GPIO_DRIVER::PWM1DAT1 = nullptr;
+volatile uint32_t* BCM2711_GPIO_DRIVER::PWM0RNG2 = nullptr;
+volatile uint32_t* BCM2711_GPIO_DRIVER::PWM0DAT2 = nullptr;
 volatile uint32_t* BCM2711_GPIO_DRIVER::virtual_memory_clock_manager_base_address = nullptr;
 volatile uint32_t* BCM2711_GPIO_DRIVER::CM_GP0CTL = nullptr;
 volatile uint32_t* BCM2711_GPIO_DRIVER::CM_GP0DIV = nullptr;
@@ -64,10 +62,9 @@ void BCM2711_GPIO_DRIVER::initialize() {
     PWM0CTL = virtual_memory_pwm0_base_ptr;
     PWM0RNG1 = virtual_memory_pwm0_base_ptr + 4;
     PWM0DAT1 = virtual_memory_pwm0_base_ptr + 5;
+    PWM0RNG2 = virtual_memory_pwm0_base_ptr + 8;
+    PWM0DAT2 = virtual_memory_pwm0_base_ptr + 9;
 
-    PWM1CTL = virtual_memory_pwm1_base_ptr;
-    PWM1RNG1 = virtual_memory_pwm1_base_ptr + 4;
-    PWM1DAT1 = virtual_memory_pwm1_base_ptr + 5;
 
     CM_GP0CTL = virtual_memory_clock_manager_base_address + 28;
     CM_GP0DIV = virtual_memory_clock_manager_base_address + 29;
@@ -88,10 +85,8 @@ void BCM2711_GPIO_DRIVER::initialize() {
     PWM0CTL = new uint32_t;
     PWM0RNG1 = new uint32_t;
     PWM0DAT1 = new uint32_t;
-
-    PWM1CTL = new uint32_t;
-    PWM1RNG1 = new uint32_t;
-    PWM1DAT1 = new uint32_t;
+    PWM0RNG2 = new uint32_t;
+    PWM0DAT2 = new uint32_t;
 
     CM_GP0CTL = new uint32_t;
     CM_GP0DIV = new uint32_t;
@@ -124,10 +119,6 @@ void BCM2711_GPIO_DRIVER::terminate() {
         delete PWM0CTL;
         delete PWM0RNG1;
         delete PWM0DAT1;
-
-        delete PWM1CTL;
-        delete PWM1RNG1;
-        delete PWM1DAT1;
 
         delete CM_GP0CTL;
         delete CM_GP0DIV;
@@ -293,24 +284,27 @@ void BCM2711_GPIO_DRIVER::configPwmPin(uint32_t freq, uint8_t duty_cycle_precent
         // Set initial PWM duty cycle (e.g., 50%)
         *PWM0DAT1 = 512;      // Adjust for your desired duty cycle*/
 
-    // Determine whether to use PWM0 or PWM1 based on the selected pin number
-    volatile uint32_t *pwm_ctl = nullptr;
-    volatile uint32_t *pwm_rng1 = nullptr;
-    volatile uint32_t *pwm_dat1 = nullptr;
+    // Determine whether to use channel1 or channel2 of the PWM0 controller
+    // based on the selected pin number
+    volatile uint32_t *pwm_rng_register = nullptr;
+    volatile uint32_t *pwm_dat_register = nullptr;
+
+    uint8_t pwm_channel = 0;
 
     if (pin_num == 12 || pin_num == 18) {
-        // For GPIO pins 12 and 18, use PWM0 registers
-        pwm_ctl = PWM0CTL;
-        pwm_rng1 = PWM0RNG1;
-        pwm_dat1 = PWM0DAT1;
+        pwm_rng_register = PWM0RNG1;
+        pwm_dat_register = PWM0DAT1;
+        pwm_channel = 1;
+
     } else if (pin_num == 13 || pin_num == 19) {
-        // For GPIO pins 13 and 19, use PWM1 registers
-        pwm_ctl = PWM1CTL;
-        pwm_rng1 = PWM1RNG1;
-        pwm_dat1 = PWM1DAT1;
+        pwm_rng_register = PWM0RNG2;
+        pwm_dat_register = PWM0DAT2;
+        pwm_channel = 2;
+
     } else {
         throw GPIO_DRIVER_EXCEPTION("Invalid GPIO pin number for PWM");
     }
+
     // Stop PWM clock
     *CM_GP0CTL = K_CLOCK_MANAGER_PASSWORD | 0x01;
 
@@ -332,36 +326,46 @@ void BCM2711_GPIO_DRIVER::configPwmPin(uint32_t freq, uint8_t duty_cycle_precent
     *CM_GP0CTL = K_CLOCK_MANAGER_PASSWORD | 0x11;
 
     // Configure PWM control and range registers
-    //*pwm_ctl = 0;                   // Disable PWM for now
     uint32_t pwm_range = clock_divisor;
-    *pwm_rng1 = pwm_range;      // PWM range/divisor value for 5 kHz (19200000 / 5000)
+    *pwm_rng_register = pwm_range;      // PWM range/divisor value for 5 kHz (19200000 / 5000)
 
-    // Enable MSEN1 and use PWM mode
-    *pwm_ctl |= (1 << 7); /*| (1 << 0);*/
+    // Set MSEN bit for the channel
+    // can be used to change between MarkSpace mode and hardware pwm algorithm
+    if (pwm_channel == 1) {
+        *PWM0CTL |= (1 << 7);
+    } else {
+        *PWM0CTL |= (1 << 15);
+    }
 
-    // set duty cycle
-    *pwm_dat1 = pwm_range * (duty_cycle_precentage / 100.0);      // Adjust for your desired duty cycle
+    // set duty cycle for the channel
+    // todo: does this go in as a float(iee-754) or int
+    // todo: bcs if it goes in as a float it might flow out of the register if 64 bit
+    // todo: and if it is only 32 bit it will still be large as hell
+    *pwm_dat_register = pwm_range * (duty_cycle_precentage / 100.0);
 }
 
 void BCM2711_GPIO_DRIVER::enablePwmPin(uint8_t pin_num, bool enable) {
-    // Determine whether to use PWM0 or PWM1 based on the selected pin number
-    volatile uint32_t *pwm_ctl = nullptr;
-
+    // Determine whether to use channel1 or channel2 of the PWM0 controller
+    // based on the selected pin number
     if (pin_num == 12 || pin_num == 18) {
-        // For GPIO pins 12 and 18, use PWM0 registers
-        pwm_ctl = PWM0CTL;
+        // For GPIO pins 12 and 18, enable or disable channel1
+        if (enable) {
+            *PWM0CTL |= (1 << 0);
+        } else {
+            *PWM0CTL &= ~(1 << 0);
+        }
     } else if (pin_num == 13 || pin_num == 19) {
-        // For GPIO pins 13 and 19, use PWM1 registers
-        pwm_ctl = PWM1CTL;
+        // For GPIO pins 13 and 19, enable or disable channel2
+        if (enable) {
+            *PWM0CTL |= (1 << 8);
+        } else {
+            *PWM0CTL &= ~(1 << 8);
+        }
     } else {
         throw GPIO_DRIVER_EXCEPTION("Invalid GPIO pin number for PWM");
     }
 
-    if (enable) {
-        *pwm_ctl |= (1 << 0);
-    } else {
-        *pwm_ctl &= (1 << 0);
-    }
+
 }
 
 void BCM2711_GPIO_DRIVER::memMampRegisters() {
@@ -402,13 +406,9 @@ void BCM2711_GPIO_DRIVER::memMampRegisters() {
     // Memorymap both PMW control registers addres ranges to vritual address space
     virtual_memory_pwm0_base_ptr = (uint32_t *) mmap(NULL, 4096, (PROT_READ | PROT_WRITE),
                                                      MAP_SHARED, memfd, K_PWM0_BASE_ADDRESS);
-    // somewhy this fails
-    virtual_memory_pwm1_base_ptr =
-            virtual_memory_pwm0_base_ptr + K_PWM1_BASE_ADDRESS - K_PWM0_BASE_ADDRESS; // markus was here
 
     // check if memorymapping failed for PWM controllers
-    if (virtual_memory_pwm0_base_ptr == MAP_FAILED
-        || virtual_memory_pwm1_base_ptr == MAP_FAILED) {
+    if (virtual_memory_pwm0_base_ptr == MAP_FAILED) {
         throw GPIO_DRIVER_EXCEPTION(MEMORY_MAPPING_ERROR,
                                     {"PWM REGISTERS", strerror(errno)});
     }
@@ -417,8 +417,7 @@ void BCM2711_GPIO_DRIVER::memMampRegisters() {
             (uint32_t *) mmap(NULL, 4096, (PROT_READ | PROT_WRITE),
                               MAP_SHARED, memfd, K_CLOCK_MANAGER_BASE_ADDRESS);
 
-    if (virtual_memory_clock_manager_base_address == MAP_FAILED
-        || virtual_memory_pwm1_base_ptr == MAP_FAILED) {
+    if (virtual_memory_clock_manager_base_address == MAP_FAILED) {
         throw GPIO_DRIVER_EXCEPTION(MEMORY_MAPPING_ERROR,
                                     {"CLOCK MANAGER REGISTERS", strerror(errno)});
     }
